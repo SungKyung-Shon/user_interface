@@ -7,6 +7,8 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.setWindowTitle("Please give us a score on how effective you think it is")
+
         self.current_video = 0
         self.videos = ['/home/shonsk/Downloads/recording0.mp4','/home/shonsk/Downloads/recording1.mp4','/home/shonsk/Downloads/recording2.mp4',
                        '/home/shonsk/Downloads/recording3.mp4','/home/shonsk/Downloads/recording4.mp4','/home/shonsk/Downloads/recording5.mp4',
@@ -22,7 +24,6 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.video_widget)
 
         self.player.setVideoOutput(self.video_widget)
-
 
         self.rating_slider = QSlider(Qt.Horizontal)
         self.rating_slider.setRange(1, 10)
