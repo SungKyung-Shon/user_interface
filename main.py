@@ -8,7 +8,11 @@ class MainWindow(QWidget):
         super().__init__()
 
         self.current_video = 0
-        self.videos = ['/home/shonsk/Downloads/1.mp4','/home/shonsk/Downloads/2.mp4']
+        self.videos = ['/home/shonsk/Downloads/recording0.mp4','/home/shonsk/Downloads/recording1.mp4','/home/shonsk/Downloads/recording2.mp4',
+                       '/home/shonsk/Downloads/recording3.mp4','/home/shonsk/Downloads/recording4.mp4','/home/shonsk/Downloads/recording5.mp4',
+                       '/home/shonsk/Downloads/recording6.mp4','/home/shonsk/Downloads/recording7.mp4','/home/shonsk/Downloads/recording8.mp4',
+                       '/home/shonsk/Downloads/recording9.mp4'
+                       ]
         self.ratings = {video: 0 for video in self.videos}
 
         self.layout = QVBoxLayout()
@@ -18,7 +22,7 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.video_widget)
 
         self.player.setVideoOutput(self.video_widget)
-        self.play_video()
+
 
         self.rating_slider = QSlider(Qt.Horizontal)
         self.rating_slider.setRange(1, 10)
@@ -31,15 +35,46 @@ class MainWindow(QWidget):
         self.rating_slider.valueChanged.connect(self.rating_spinbox.setValue)
         self.rating_spinbox.valueChanged.connect(self.rating_slider.setValue)
 
+        self.pause_play_button = QPushButton("Pause")
+        self.pause_play_button.clicked.connect(self.toggle_pause_play)
+        self.layout.addWidget(self.pause_play_button)
+
+        self.prev_button = QPushButton("Previous Video")
+        self.prev_button.clicked.connect(self.prev_video)
+        self.layout.addWidget(self.prev_button)
+
+        self.replay_button = QPushButton("Replay")
+        self.replay_button.clicked.connect(self.play_video)
+        self.layout.addWidget(self.replay_button)
+
         self.next_button = QPushButton("Next Video")
         self.next_button.clicked.connect(self.next_video)
         self.layout.addWidget(self.next_button)
 
         self.setLayout(self.layout)
 
+        self.player.mediaStatusChanged.connect(self.handle_media_status)
+
+        self.play_video()
+    def handle_media_status(self, status):
+        if status == QMediaPlayer.EndOfMedia:
+            self.next_button.setEnabled(True)
+            self.rating_slider.setEnabled(True)
+            self.rating_spinbox.setEnabled(True)
     def play_video(self):
         self.player.setMedia(QMediaContent(QUrl.fromLocalFile(self.videos[self.current_video])))
         self.player.play()
+        self.next_button.setEnabled(False)
+        self.rating_slider.setEnabled(False)
+        self.rating_spinbox.setEnabled(False)
+
+    def toggle_pause_play(self):
+        if self.player.state() == QMediaPlayer.PlayingState:
+            self.player.pause()
+            self.pause_play_button.setText("Play")
+        else:
+            self.player.play()
+            self.pause_play_button.setText("Pause")
 
     def next_video(self):
         self.ratings[self.videos[self.current_video]] = self.rating_slider.value()
@@ -54,6 +89,14 @@ class MainWindow(QWidget):
             self.player.stop()
             with open('ratings.json', 'w') as json_file:  # Open the file in write mode
                 json.dump(self.ratings, json_file)
+
+    def prev_video(self):
+        if self.current_video > 0:
+            self.current_video -= 1
+            self.rating_slider.setValue(self.ratings[self.videos[self.current_video]])
+            self.rating_spinbox.setValue(self.ratings[self.videos[self.current_video]])
+            self.play_video()
+
 app = QApplication([])
 
 window = MainWindow()
