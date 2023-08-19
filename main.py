@@ -10,10 +10,10 @@ class MainWindow(QWidget):
         self.setWindowTitle("Please give us a score on how effective you think it is")
 
         self.current_video = 0
-        self.videos = ['/home/shonsk/Downloads/recording0.mp4','/home/shonsk/Downloads/recording1.mp4','/home/shonsk/Downloads/recording2.mp4',
-                       '/home/shonsk/Downloads/recording3.mp4','/home/shonsk/Downloads/recording4.mp4','/home/shonsk/Downloads/recording5.mp4',
-                       '/home/shonsk/Downloads/recording6.mp4','/home/shonsk/Downloads/recording7.mp4','/home/shonsk/Downloads/recording8.mp4',
-                       '/home/shonsk/Downloads/recording9.mp4'
+        self.videos = ['/home/sung/videos/recording0.mp4','/home/sung/videos/recording1.mp4','/home/sung/videos/rrecording2.mp4',
+                       '/home/sung/videos/recording3.mp4','/home/sung/videos/recording4.mp4','/home/sung/videos/recording5.mp4',
+                       '/home/sung/videos/recording6.mp4','/home/sung/videos/recording7.mp4','/home/sung/videos/recording8.mp4',
+                       '/home/sung/videos/recording9.mp4'
                        ]
         self.ratings = {video: 0 for video in self.videos}
 
