@@ -3,6 +3,8 @@ from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 import json
+import os
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -10,11 +12,14 @@ class MainWindow(QWidget):
         self.setWindowTitle("Please give us a score on how effective you think it is")
 
         self.current_video = 0
-        self.videos = ['/home/sung/videos/recording0.mp4','/home/sung/videos/recording1.mp4','/home/sung/videos/recording2.mp4',
-                       '/home/sung/videos/recording3.mp4','/home/sung/videos/recording4.mp4','/home/sung/videos/recording5.mp4',
-                       '/home/sung/videos/recording6.mp4','/home/sung/videos/recording7.mp4','/home/sung/videos/recording8.mp4',
-                       '/home/sung/videos/recording9.mp4'
-                       ]
+        directory='/home/sung/videos'
+        self.videos=[]
+        for filename in os.listdir(directory):
+            f = os.path.join(directory, filename)
+            if os.path.isfile(f) and filename.endswith('.mp4'):
+                print(f)
+                self.videos.append(f)
+
         self.ratings = {video: 0 for video in self.videos}
 
         self.layout = QVBoxLayout()
@@ -88,7 +93,7 @@ class MainWindow(QWidget):
         else:
             print("All videos have been rated. Ratings:", self.ratings)
             self.player.stop()
-            with open('ratings.json', 'w') as json_file:  # Open the file in write mode
+            with open('ratings.json', 'w') as json_file:  
                 json.dump(self.ratings, json_file)
 
     def prev_video(self):
