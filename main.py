@@ -4,6 +4,8 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 import json
 import os
+from PyQt5.QtWidgets import QLineEdit, QLabel
+
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -16,11 +18,19 @@ class MainWindow(QWidget):
         self.videos=[]
         for filename in os.listdir(directory):
             f = os.path.join(directory, filename)
-            if os.path.isfile(f) and filename.endswith('.mp4'):
+            if os.path.isfile(f) and filename.endswith('.avi'):
                 print(f)
                 self.videos.append(f)
 
-        self.ratings = {video: 0 for video in self.videos}
+        if os.path.exists('ratings.json'):
+            with open('ratings.json', 'r') as json_file:
+                self.ratings = json.load(json_file)
+        else:
+            self.ratings = {video: 0 for video in self.videos}
+
+        for video in self.videos:
+            if video not in self.ratings:
+                self.ratings[video] = 0
 
         self.layout = QVBoxLayout()
 
@@ -57,22 +67,36 @@ class MainWindow(QWidget):
         self.next_button.clicked.connect(self.next_video)
         self.layout.addWidget(self.next_button)
 
+        self.current_video_label = QLabel(f"Current Video: {self.current_video + 1}/{len(self.videos)}")
+        self.layout.addWidget(self.current_video_label)
+
+        self.goto_video_input = QLineEdit()
+        self.goto_video_input.setPlaceholderText("Enter video number")
+        self.layout.addWidget(self.goto_video_input)
+
+        self.goto_video_button = QPushButton("Go")
+        self.goto_video_button.clicked.connect(self.goto_video)
+        self.layout.addWidget(self.goto_video_button)
+
         self.setLayout(self.layout)
 
         self.player.mediaStatusChanged.connect(self.handle_media_status)
 
         self.play_video()
+
     def handle_media_status(self, status):
         if status == QMediaPlayer.EndOfMedia:
             self.next_button.setEnabled(True)
             self.rating_slider.setEnabled(True)
             self.rating_spinbox.setEnabled(True)
+            
     def play_video(self):
         self.player.setMedia(QMediaContent(QUrl.fromLocalFile(self.videos[self.current_video])))
         self.player.play()
         self.next_button.setEnabled(False)
         self.rating_slider.setEnabled(False)
         self.rating_spinbox.setEnabled(False)
+        self.current_video_label.setText(f"Current Video: {self.current_video + 1}/{len(self.videos)}")
 
     def toggle_pause_play(self):
         if self.player.state() == QMediaPlayer.PlayingState:
@@ -85,6 +109,8 @@ class MainWindow(QWidget):
     def next_video(self):
         self.ratings[self.videos[self.current_video]] = self.rating_slider.value()
 
+        self.save_ratings()
+
         if self.current_video + 1 < len(self.videos):
             self.current_video += 1
             self.rating_slider.setValue(1)
@@ -93,8 +119,13 @@ class MainWindow(QWidget):
         else:
             print("All videos have been rated. Ratings:", self.ratings)
             self.player.stop()
-            with open('ratings.json', 'w') as json_file:  
-                json.dump(self.ratings, json_file)
+            #with open('ratings.json', 'w') as json_file:  
+             #   json.dump(self.ratings, json_file)
+
+    def save_ratings(self):
+        with open('ratings.json', 'w') as json_file:
+            json.dump(self.ratings, json_file)
+        print("Ratings saved.")
 
     def prev_video(self):
         if self.current_video > 0:
@@ -102,6 +133,19 @@ class MainWindow(QWidget):
             self.rating_slider.setValue(self.ratings[self.videos[self.current_video]])
             self.rating_spinbox.setValue(self.ratings[self.videos[self.current_video]])
             self.play_video()
+            self.save_rantings()
+    
+    def goto_video(self):
+        video_number = self.goto_video_input.text()
+        if video_number.isdigit():
+            video_number = int(video_number) - 1  # Adjust to zero-indexed list
+            if 0 <= video_number < len(self.videos):
+                self.current_video = video_number
+                self.play_video()
+            else:
+                print(f"Invalid video number. Please enter a number between 1 and {len(self.videos)}")
+        else:
+            print("Invalid input. Please enter a numeric value.")
 
 app = QApplication([])
 
